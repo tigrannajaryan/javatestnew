@@ -1,5 +1,7 @@
 package com.mycompany.app;
 
+import org.apache.logging.log4j.LogManager;
+
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
@@ -27,8 +29,12 @@ import io.opentelemetry.api.logs.LoggerProvider;
 public class App {
 
     public static OpenTelemetry openTelemetry;
+    
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(App.class);
 
     public static void main(String[] args) {
+        logger.info("App is starting");
+
         System.out.println("Hello World!");
         initOtel();
         createLog();
