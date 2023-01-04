@@ -16,6 +16,9 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.api.logs.GlobalLoggerProvider;
+import io.opentelemetry.api.logs.Logger;
+import io.opentelemetry.api.logs.LoggerProvider;
 
 /**
  * Hello world!
@@ -28,6 +31,7 @@ public class App {
     public static void main(String[] args) {
         System.out.println("Hello World!");
         initOtel();
+        createLog();
         createSpan();
     }    
 
@@ -37,20 +41,20 @@ public class App {
         .merge(Resource.create(Attributes.of(ResourceAttributes.SERVICE_NAME, "logical-service-name")));
 
         SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
-        .addSpanProcessor(BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder().build()).build())
-        .setResource(resource)
-        .build();
+            .addSpanProcessor(BatchSpanProcessor.builder(OtlpGrpcSpanExporter.builder().build()).build())
+            .setResource(resource)
+            .build();
 
         SdkMeterProvider sdkMeterProvider = SdkMeterProvider.builder()
-        .registerMetricReader(PeriodicMetricReader.builder(OtlpGrpcMetricExporter.builder().build()).build())
-        .setResource(resource)
-        .build();
+            .registerMetricReader(PeriodicMetricReader.builder(OtlpGrpcMetricExporter.builder().build()).build())
+            .setResource(resource)
+            .build();
 
         openTelemetry = OpenTelemetrySdk.builder()
-        .setTracerProvider(sdkTracerProvider)
-        .setMeterProvider(sdkMeterProvider)
-        .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
-        .buildAndRegisterGlobal();
+            .setTracerProvider(sdkTracerProvider)
+            .setMeterProvider(sdkMeterProvider)
+            .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
+            .buildAndRegisterGlobal();
 
         System.out.println("Otel init done");
     }
@@ -67,16 +71,9 @@ public class App {
     }
 
     public static void createLog() {
-        
+        LoggerProvider provider = GlobalLoggerProvider.get();
 
-
-        Tracer tracer = openTelemetry.getTracer("instrumentation-library-name", "1.0.0");
-        Span span = tracer.spanBuilder("my span").startSpan();
-        // Make the span the current span
-        try (Scope ss = span.makeCurrent()) {
-        // In this scope, the span is the current/active span
-        } finally {
-            span.end();
-        }
+        Logger logger = provider.get("instrumentation-library-name");
+        logger.logRecordBuilder().setBody("test log").emit();
     }
 }
