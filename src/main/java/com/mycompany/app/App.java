@@ -2,7 +2,10 @@ package com.mycompany.app;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.Scope;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
@@ -19,10 +22,14 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
  *
  */
 public class App {
+
+    public static OpenTelemetry openTelemetry;
+
     public static void main(String[] args) {
         System.out.println("Hello World!");
         initOtel();
-    }
+        createSpan();
+    }    
 
     public static void initOtel() 
     {
@@ -39,12 +46,37 @@ public class App {
         .setResource(resource)
         .build();
 
-        OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
+        openTelemetry = OpenTelemetrySdk.builder()
         .setTracerProvider(sdkTracerProvider)
         .setMeterProvider(sdkMeterProvider)
         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
         .buildAndRegisterGlobal();
 
         System.out.println("Otel init done");
+    }
+
+    public static void createSpan() {
+        Tracer tracer = openTelemetry.getTracer("instrumentation-library-name", "1.0.0");
+        Span span = tracer.spanBuilder("my span").startSpan();
+        // Make the span the current span
+        try (Scope ss = span.makeCurrent()) {
+        // In this scope, the span is the current/active span
+        } finally {
+            span.end();
+        }
+    }
+
+    public static void createLog() {
+        
+
+
+        Tracer tracer = openTelemetry.getTracer("instrumentation-library-name", "1.0.0");
+        Span span = tracer.spanBuilder("my span").startSpan();
+        // Make the span the current span
+        try (Scope ss = span.makeCurrent()) {
+        // In this scope, the span is the current/active span
+        } finally {
+            span.end();
+        }
     }
 }
