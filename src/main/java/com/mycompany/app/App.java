@@ -21,6 +21,7 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.sdk.logs.SdkLoggerProvider;
 
 /**
  * Hello world!
@@ -34,8 +35,6 @@ public class App {
 
     public static void main(String[] args) {
         logger.info("App is starting");
-
-        System.out.println("Hello World!");
         initOtel();
         createLog();
         createSpan();
@@ -62,7 +61,14 @@ public class App {
             .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
             .buildAndRegisterGlobal();
 
-        System.out.println("Otel init done");
+        SdkLoggerProvider sdkLoggerProvider =
+            SdkLoggerProvider.builder()
+              .setResource(resource)
+              //.addLogProcessor(...)
+              .build();
+          GlobalLoggerProvider.set(sdkLoggerProvider);
+
+        logger.info("Otel is initialized");
     }
 
     public static void createSpan() {
@@ -70,7 +76,8 @@ public class App {
         Span span = tracer.spanBuilder("my span").startSpan();
         // Make the span the current span
         try (Scope ss = span.makeCurrent()) {
-        // In this scope, the span is the current/active span
+            // In this scope, the span is the current/active span
+            logger.info("Inside span");
         } finally {
             span.end();
         }
