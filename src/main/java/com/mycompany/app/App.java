@@ -15,6 +15,7 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.exporter.otlp.metrics.OtlpGrpcMetricExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.exporter.logging.LoggingSpanExporter;
+import io.opentelemetry.exporter.logging.SystemOutLogRecordExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.export.PeriodicMetricReader;
@@ -26,7 +27,9 @@ import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import io.opentelemetry.api.logs.GlobalLoggerProvider;
 import io.opentelemetry.api.logs.Logger;
 import io.opentelemetry.api.logs.LoggerProvider;
+import io.opentelemetry.api.logs.Severity;
 import io.opentelemetry.sdk.logs.SdkLoggerProvider;
+import io.opentelemetry.sdk.logs.export.SimpleLogRecordProcessor;
 
 /**
  * Hello world!
@@ -77,6 +80,7 @@ public class App {
             SdkLoggerProvider.builder()
               .setResource(resource)
               //.addLogProcessor(...)
+              .addLogRecordProcessor(SimpleLogRecordProcessor.create(SystemOutLogRecordExporter.create()))
               .build();
 
         openTelemetry = OpenTelemetrySdk.builder()
@@ -109,6 +113,9 @@ public class App {
         LoggerProvider provider = GlobalLoggerProvider.get();
 
         Logger logger = provider.get("instrumentation-library-name");
-        logger.logRecordBuilder().setBody("test log").emit();
+        logger.logRecordBuilder()
+            .setBody("test log")
+            .setSeverity(Severity.ERROR)
+            .emit();
     }
 }
