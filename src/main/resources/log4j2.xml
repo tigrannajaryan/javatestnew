@@ -16,11 +16,11 @@
       <PatternLayout
           pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} trace_id: %X{trace_id} span_id: %X{span_id} trace_flags: %X{trace_flags} - %msg%n"/>
     </Console>
-   <OpenTelemetry name="OpenTelemetryAppender"/>
+<!--   <OpenTelemetry name="OpenTelemetryAppender"/> -->
   </Appenders>
   <Loggers>
     <Root level="debug">
-      <AppenderRef ref="OpenTelemetryAppender" level="All"/>
+<!--      <AppenderRef ref="OpenTelemetryAppender" level="All"/> -->
       <AppenderRef ref="Console" level="All"/>
     </Root>
   </Loggers>
